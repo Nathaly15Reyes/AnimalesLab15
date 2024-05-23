@@ -1,0 +1,130 @@
+﻿@page "/aves-crear"
+@inject HttpClient Http
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+@inject NavigationManager NavigationManager
+
+
+
+<h3>Aves</h3>
+
+<EditForm Model="@ave" OnValidSubmit="@Guardar">
+
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="row">
+        <div class="col">
+            <label for="Nombre">Nombre Propio </label>
+            <InputText id="Nombre" @bind-Value="ave.Nombre" class="form-control" />
+            <ValidationMessage For="() => ave.Nombre" />
+        </div>
+        <div class="col">
+            <label for="Especie">Especie</label>
+            <InputText id="Apellido" @bind-Value="ave.Especie" class="form-control" />
+            <ValidationMessage For="() => ave.Especie" />
+
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-2">
+            <label for="Alimentacion">Alimentacion</label>
+            <InputText id="Alimentacion" @bind-Value="ave.Alimentacion" class="form-control" />
+        </div>
+        <div class="col-8">
+            <label for="TdeVida">Tiempo de Vida</label>
+            <InputText id="TdeVida" @bind-Value="ave.TdeVida" class="form-control" />
+        </div>
+        <div class="col-2">
+            <label for="Volador">Puede Volar</label>
+            <InputText id="Volador" @bind-Value="ave.Volador" class="form-control" />
+
+        </div>
+        <div class="col-2">
+            <label for="PeriodoIncub">Periodo de Incubacion</label>
+            <InputText id="PeriodoIncub" @bind-Value="ave.PeriodoIncub" class="form-control" />
+
+        </div>
+
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Guardar</button>
+    </div>
+</EditForm>
+
+@if (aves != null)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Especie</th>
+                <th>Alimentacion</th>
+                <th>TdeVida</th>
+                <th>Volador</th>
+                <th>PeriodoIncub</th>
+                <th>Editar</th>
+                <th>Eliminar</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var ave in aves)
+            {
+                <tr>
+                    <td>@ave.Nombre</td>
+                    <td>@ave.Especie</td>
+                    <td>@ave.Alimentacion</td>
+                    <td>@ave.TdeVida</td>
+                    <td>@ave.Volador</td>
+                    <td>@ave.PeriodoIncub</td>
+                    <td>
+                        <button class="btn btn-danger"
+                                @onclick="@(() => BorrarAves(ave.Volador))">
+                            Eliminar
+                        </button>
+                    </td>
+                    <td>
+                        <button class="btn btn-warning"
+                                @onclick="@(() => NavigationManager.NavigateTo($"/aves-editar/{ave.Volador}"))">
+                            Editar
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+
+    private Aves ave = new Aves();
+    List<Aves> aves = new List<Aves>();
+
+
+    protected async Task Guardar()
+    {
+        aves.Add(ave);
+        ave = new Aves();
+
+
+        await localStorage.SetItemAsync("aves", aves);
+
+    }
+
+    protected override async Task OnInitializedAsync()
+    {   //La primera vez que se corre poner en comentarios, pues como no existen datos
+        //convierta la lista catedraticos en null
+        aves = await localStorage.GetItemAsync<List<Aves>>("aves");
+        if (aves == null)
+        {
+            aves = new List<Aves>();
+        }
+    }
+
+    protected async Task BorrarAves(string Volador)
+    {
+        aves.Remove(aves.First(c => c.Volador == Volador));
+        await localStorage.SetItemAsync("aves", aves);
+
+    }
+
+}
